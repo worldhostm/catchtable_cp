@@ -1,36 +1,111 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 캐치테이블 - 식당 대기열 예약 시스템
 
-## Getting Started
+식당 대기열 관리를 위한 웹 애플리케이션입니다. 고객이 휴대폰 번호로 대기열에 등록하면 카카오톡으로 알림을 받을 수 있습니다.
 
-First, run the development server:
+## 주요 기능
 
+- **개인정보 수집 동의**: 개인정보 처리방침 동의 후 서비스 이용
+- **휴대폰 번호 등록**: 010 형태의 휴대폰 번호로 대기열 등록
+- **실시간 대기열 관리**: 현재 대기 상황을 실시간으로 확인
+- **카카오톡 알림**: 등록 완료 및 입장 준비 시 카카오톡 알림 발송
+- **관리자 페이지**: 대기열 현황 관리 및 고객 호출
+
+## 기술 스택
+
+- **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes
+- **알림 서비스**: 카카오톡 비즈니스 API
+- **데이터 저장**: 메모리 기반 (프로토타입용)
+
+## 설치 및 실행
+
+1. **의존성 설치**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **환경 변수 설정**
+`.env.local` 파일에서 카카오 API 키를 설정하세요:
+```env
+KAKAO_APP_KEY=your_kakao_app_key_here
+KAKAO_ADMIN_KEY=your_kakao_admin_key_here
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. **개발 서버 실행**
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. **브라우저에서 확인**
+- 고객용 페이지: http://localhost:3000
+- 관리자 페이지: http://localhost:3000/admin
 
-## Learn More
+## 사용 방법
 
-To learn more about Next.js, take a look at the following resources:
+### 고객 (대기열 등록)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **동의 페이지**: 개인정보 수집 및 이용 동의
+2. **휴대폰 번호 입력**: 010-0000-0000 형식으로 입력
+3. **등록 완료**: 대기번호 확인 및 카카오톡 알림 수신
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 관리자 (대기열 관리)
 
-## Deploy on Vercel
+1. **/admin 페이지 접속**
+2. **대기열 현황 확인**: 실시간 대기 고객 목록 확인
+3. **고객 호출**: "입장준비" 버튼으로 고객에게 알림 발송
+4. **대기 완료**: "완료" 버튼으로 대기 상태 종료
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## API 엔드포인트
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 고객용 API
+- `POST /api/register-queue` - 대기열 등록
+- `GET /api/queue-status` - 대기 상태 조회
+
+### 관리자용 API
+- `GET /api/admin/queue` - 전체 대기열 조회
+- `PATCH /api/admin/queue` - 대기열 상태 업데이트
+
+## 카카오톡 알림 설정
+
+카카오톡 비즈니스 API를 사용하여 알림을 발송합니다. 실제 운영 시에는 다음이 필요합니다:
+
+1. **카카오 개발자 센터에서 앱 등록**
+2. **카카오톡 비즈니스 API 신청**
+3. **메시지 템플릿 등록**
+4. **사용자 친구 추가 또는 채널 연결**
+
+개발 환경에서는 실제 카카오톡 전송 대신 콘솔 로그로 시뮬레이션됩니다.
+
+## 프로젝트 구조
+
+```
+├── app/
+│   ├── api/                 # API 라우트
+│   │   ├── register-queue/  # 대기열 등록
+│   │   ├── queue-status/    # 대기 상태 조회
+│   │   └── admin/queue/     # 관리자 대기열 관리
+│   ├── admin/               # 관리자 페이지
+│   ├── phone/               # 휴대폰 번호 입력 페이지
+│   ├── complete/            # 등록 완료 페이지
+│   └── page.tsx             # 메인(동의) 페이지
+├── lib/
+│   └── kakao.ts             # 카카오톡 알림 서비스
+└── .env.local               # 환경 변수
+```
+
+## 주의사항
+
+- **개발 환경**: 현재 메모리 기반 데이터 저장으로 서버 재시작 시 데이터 초기화
+- **운영 환경**: 실제 운영 시에는 데이터베이스 연동 필요
+- **보안**: 카카오 API 키는 절대 공개하지 마세요
+- **테스트**: 카카오톡 알림 테스트 시 실제 사용자와 친구 관계 필요
+
+## 향후 개선사항
+
+- [ ] 데이터베이스 연동 (PostgreSQL, MongoDB 등)
+- [ ] 사용자 인증 시스템
+- [ ] 실시간 웹소켓 연동
+- [ ] 대기열 통계 및 분석
+- [ ] 다국어 지원
+- [ ] PWA (Progressive Web App) 지원
